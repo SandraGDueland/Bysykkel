@@ -21,16 +21,6 @@ app_ui = ui.page_fluid(
 		""")
 	),
 	ui.h1('Bysykkel', style = 'color: green;'),
-	ui.layout_columns(
-		ui.card(
-    		ui.h2('Add new user', style='color: green;'),
-			ui.input_text("full_name", "Full name ", placeholder="Enter name..."),
-			ui.input_text("phone_nr", "Phone number", placeholder="Enter phone number..."),
-			ui.input_text("email", "Email", placeholder="Enter email..."),
-			ui.input_action_button("submit_user_form", "Submit"),
-			ui.output_ui("user_info_ui"),
-			)	
-    	),
 	ui.page_fillable(
 		ui.navset_card_tab(                 # https://shiny.posit.co/py/layouts/tabs/#card-with-a-tabbed-tabset
 			ui.nav_panel("Users",           # Used this link to find the tab component
@@ -44,7 +34,20 @@ app_ui = ui.page_fluid(
 			ui.nav_panel("Subscriptions", 
 				ui.h2('Purchasing statistics for subscriptions', style='color: green;'),
 				ui.output_data_frame('subs_df')
-			    ),    
+			    ),
+            ui.nav_panel("Add user",
+                ui.h2('Add new user', style= 'color: green;'),
+					ui.layout_columns(
+						ui.card(
+							ui.input_text("full_name", "Full name ", placeholder="Enter name..."),
+							ui.input_text("phone_nr", "Phone number", placeholder="Enter phone number..."),
+							ui.input_text("email", "Email", placeholder="Enter email..."),
+							ui.input_action_button("submit_user_form", "Submit"),
+							ui.output_ui("user_info_ui"),
+						)	
+    				),
+                         
+				),      
         )
     ),
 )
