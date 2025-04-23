@@ -1,15 +1,15 @@
 import re
 from shiny import render, reactive, Inputs, Outputs, Session, ui
-from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user
+from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user, get_usernames_filtered
 
 
 def server(input , output, session):
-    # Preload data to stop the reload of the webpage when changing tab
-	# https://shiny.posit.co/py/api/core/reactive.value.html
-	# used to find out how to set a reactive value
-	usernames = reactive.value(get_usernames())
-	bikes = reactive.value(get_bikes())
-	subscriptions = reactive.value(get_subscription())
+    # # Preload data to stop the reload of the webpage when changing tab
+	# # https://shiny.posit.co/py/api/core/reactive.value.html
+	# # used to find out how to set a reactive value
+	# usernames = reactive.value(get_usernames())
+	# bikes = reactive.value(get_bikes())
+	# subscriptions = reactive.value(get_subscription())
 	
     # Rendering DataFrames
 	# https://shiny.posit.co/py/api/core/ui.output_data_frame.html#examples
@@ -17,7 +17,12 @@ def server(input , output, session):
 	@output 
 	@render.data_frame
 	def usernames_df():
-		return render.DataGrid(usernames.get())
+		query = input.user_search_input().strip()
+		if query:
+			df = get_usernames_filtered(query)
+		else:
+			df = get_usernames()
+		return render.DataGrid(df)
 	@output
 	@render.data_frame
 	def bikes_df():

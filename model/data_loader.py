@@ -6,9 +6,21 @@ from model.db import get_connection
 # Functions to collect pd data_frames to pass to the ui components
 def get_usernames():
 	conn = get_connection()
-	usernames = pd.read_sql_query('SELECT name as Names FROM user ORDER BY name ASC', conn)
+	usernames = pd.read_sql_query('SELECT userID AS UserID, name as Names, phone AS Phone FROM user ORDER BY name ASC', conn)
 	conn.close()
 	return usernames
+
+def get_usernames_filtered(search_name):
+    conn = get_connection()
+    like_pattern = f"%{search_name}%"
+    usernames = pd.read_sql_query("""
+                                  SELECT userID AS UserID, name as Names, phone AS Phone
+                                  FROM user
+                                  WHERE name LIKE ?
+                                  ORDER BY name ASC
+                                  """, conn, params=(like_pattern,))
+    conn.close()
+    return usernames
 
 def get_bikes():
     conn = get_connection()
