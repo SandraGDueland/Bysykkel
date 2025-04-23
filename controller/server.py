@@ -3,7 +3,7 @@ from shiny import render, reactive, Inputs, Outputs, Session, ui
 from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user
 
 
-def server(input: Inputs, output: Outputs, session: Session):
+def server(input , output, session):
     # Preload data to stop the reload of the webpage when changing tab
 	# https://shiny.posit.co/py/api/core/reactive.value.html
 	# used to find out how to set a reactive value
@@ -27,6 +27,8 @@ def server(input: Inputs, output: Outputs, session: Session):
 	def subs_df():
 		return render.DataGrid(subscriptions.get())
 	
+	# Validity checks        
+	# Used this link the make the checks: https://www.w3schools.com/python/python_regex.asp 
 	def is_valid_name(name):
 		return (re.fullmatch(r"[A-Åa-å]+(?: [A-Åa-å]+)*", name) is not None)
 	
@@ -36,33 +38,37 @@ def server(input: Inputs, output: Outputs, session: Session):
 	def is_valid_email(email):
 		return "@" in email
 
+	# Submit user form button handling
 	@reactive.event(input.submit_user_form)
-	def submit_user_button_clicked():
-		print("submit button clicked!")
-		name = input.full_name().strip()
+	def submit_user():
+		name = input.full_name().strip()   # Getting rid of trailing white spaces
 		phone = input.phone_nr().strip()
 		email = input.email().strip()
 		
         # Validity checks
-		errors = []
+		validity = []
 		if not is_valid_name(name):
-			errors.append(f"Name: {name} is Invalid")
+			validity.append(f"{name} - Not Valid")
+		else:
+			validity.append(f"{name} - Valid")
 
 		if not is_valid_phone(phone):
-			errors.append(f"Phone: {phone} is Invalid")
+			validity.append(f"{phone} - Not Valid")
+		else:
+			validity.append(f"{phone} - Valid")
 
 		if not is_valid_email(email):
-			errors.append(f"Email: {email} is Invalid")
+			validity.append(f"{email} - Not Valid")
+		else:
+			validity.append(f"{email} - Valid")
 
 
-		if errors:
-			output.user_info_ui = render.ui(
-				ui.markdown("\n".join(errors))
-			)
-			return		
-			
-		insert_user(name, phone, email)
+		if is_valid_name(name) and is_valid_phone(phone) and is_valid_email(email):
+			insert_user(name, phone, email)
 
-		output.user_info_ui = render.ui(
-			ui.markdown(f"Successfully added user to database")
-		)
+		return validity
+	
+	@output
+	@render.text
+	def user_info_ui():
+		return ui.markdown("<br>".join(submit_user()))  # <br> break in HTML, because \n didn't work 
