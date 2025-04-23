@@ -21,3 +21,15 @@ def get_subscription():
 	subs = pd.read_sql_query('SELECT type as Type, count(*) AS Purchased FROM subscription GROUP BY type', conn)
 	conn.close()
 	return subs
+
+
+# Functions to insert new information into the database
+def insert_user(full_name, phone_nr, email):
+	print("inserting into database...")
+	conn = get_connection()
+	cursor = conn.cursor()
+	cursor.execute("INSERT INTO user (name, phone, email) VALUES (?, ?, ?)",
+				(full_name, phone_nr, email)
+				)
+	conn.commit()
+	conn.close()

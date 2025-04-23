@@ -1,5 +1,7 @@
-from shiny import render, reactive, Inputs, Outputs, Session
-from model.data_loader import get_bikes, get_subscription, get_usernames
+import re
+from shiny import render, reactive, Inputs, Outputs, Session, ui
+from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user
+
 
 def server(input: Inputs, output: Outputs, session: Session):
     # Preload data to stop the reload of the webpage when changing tab
@@ -24,8 +26,43 @@ def server(input: Inputs, output: Outputs, session: Session):
 	@render.data_frame
 	def subs_df():
 		return render.DataGrid(subscriptions.get())
-    
+	
+	def is_valid_name(name):
+		return (re.fullmatch(r"[A-Åa-å]+(?: [A-Åa-å]+)*", name) is not None)
+	
+	def is_valid_phone(phone):
+		return (re.fullmatch(r"\d{8}", phone) is not None)
+	
+	def is_valid_email(email):
+		return "@" in email
+
+	@reactive.event(input.submit_user_form)
+	def submit_user_button_clicked():
+		print("submit button clicked!")
+		name = input.full_name().strip()
+		phone = input.phone_nr().strip()
+		email = input.email().strip()
+		
+        # Validity checks
+		errors = []
+		if not is_valid_name(name):
+			errors.append(f"Name: {name} is Invalid")
+
+		if not is_valid_phone(phone):
+			errors.append(f"Phone: {phone} is Invalid")
+
+		if not is_valid_email(email):
+			errors.append(f"Email: {email} is Invalid")
 
 
+		if errors:
+			output.user_info_ui = render.ui(
+				ui.markdown("\n".join(errors))
+			)
+			return		
+			
+		insert_user(name, phone, email)
 
- 
+		output.user_info_ui = render.ui(
+			ui.markdown(f"Successfully added user to database")
+		)
