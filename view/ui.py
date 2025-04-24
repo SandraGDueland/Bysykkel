@@ -25,31 +25,42 @@ app_ui = ui.page_fluid(
 		ui.navset_card_tab(                 # https://shiny.posit.co/py/layouts/tabs/#card-with-a-tabbed-tabset
 			ui.nav_panel("Users",           # Used this link to find the tab component
 				ui.h2('Usernames', style='color: green;'),
-                ui.input_text("user_search_input", "Search by name", placeholder="Search by name.."),
-                ui.input_action_button("user_search_button", "Search"),
+                ui.row(
+                	ui.input_text("user_search_input", label=None, placeholder="Search by name.."),
+                	ui.input_action_button("user_search_button", "Search", style="color: green; max-height: 5dvh;", width='30%'),
+				),
 				ui.output_data_frame("usernames_df"),
-			),	
+			),
+			ui.nav_panel("Trips", 
+				ui.h2('Trips ending at each station', style='color: green;'),
+				ui.output_data_frame('trips_end_df')
+			),
+			ui.nav_panel("Stations",
+				ui.h2('Available bikes at each staiton', style='color: green;'),
+				ui.input_text("station_search", "Search by station or bike", placeholder="Search by station or bike..."),
+				ui.output_data_frame("station_bikes_df")
+			),
 			ui.nav_panel("Bikes", 
 				ui.h2('Bike names and status', style='color: green;'),
 				ui.output_data_frame('bikes_df')
-				),
+			),
 			ui.nav_panel("Subscriptions", 
 				ui.h2('Purchasing statistics for subscriptions', style='color: green;'),
 				ui.output_data_frame('subs_df')
-			    ),
+			),
             ui.nav_panel("Add user",
                 ui.h2('Add new user', style= 'color: green;'),
-					ui.layout_columns(
-						ui.card(
+					ui.layout_columns(                             # https://shiny.posit.co/py/layouts/panels-cards/#content-divided-by-cards
+						ui.card(                                   # used for layout example
 							ui.input_text("full_name", "Full name ", placeholder="Enter name..."),
 							ui.input_text("phone_nr", "Phone number", placeholder="Enter phone number..."),
 							ui.input_text("email", "Email", placeholder="Enter email..."),
-							ui.input_action_button("submit_user_form", "Submit"),
-							ui.output_ui("user_info_ui"),
+							ui.input_action_button("submit_user_form", "Submit", style="color: green;", width='30%'),
+							ui.output_ui("user_info_ui"),           # Placeholder until 'submit_user_form' action button is clicked.
 						)	
     				),
                          
-				),      
+			),      
         )
     ),
 )
