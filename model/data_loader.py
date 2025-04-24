@@ -1,8 +1,10 @@
 import sqlite3
 import pandas as pd
 from model.db import get_connection
+from datetime import datetime
 
 
+# ------------- Get data frames -------------------------------
 # Functions to collect pd data_frames to pass to the ui components
 def get_usernames():               # Default get users query
 	conn = get_connection()
@@ -21,6 +23,8 @@ def get_usernames_filtered(search_name):      # Get users query when search coun
                                   """, conn, params=(like_pattern,))
     conn.close()
     return usernames
+
+
 
 def get_bikes():
     conn = get_connection()
@@ -57,7 +61,87 @@ def get_station_bikes(query):
     conn.close()
     return station_bikes
 
+ #  ------------- Get lists --------------------
+def get_stations(): 
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM station ORDER BY stationID ASC;")
+    stations = cursor.fetchall()
+    conn.close()
+    return [station[0] for station in stations]
 
+def get_users():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM user ORDER BY name ASC;")
+    users = cursor.fetchall()
+    conn.close()
+    return [user[0] for user in users]
+
+
+ # ------------------ get one ------------------------------
+def find_available_bikeID(stationID):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""SELECT bike.bikeID
+                   FROM bike JOIN station ON bike.lastStationID = station.stationID 
+                   WHERE bike.lastStationID = ? AND bike.status = 'Parked' LIMIT 1;""", (stationID,))
+    bike = cursor.fetchone()
+    conn.close()
+    return bike[0] if bike else None
+
+def find_active_bike(userID):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""SELECT bike.bikeID FROM bike JOIN trip ON bike.bikeID = trip.bikeID 
+                   WHERE trip.userID = ? AND bike.status = 'Active' AND trip.endStationID IS NULL;
+                   """, (userID,))
+    bike = cursor.fetchone()
+    conn.close()
+    return bike[0] if bike else None
+    
+
+def get_bike_name(bikeID):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM bike WHERE bikeID = ?;", (bikeID,))
+    name = cursor.fetchone()
+    conn.close()
+    return name[0] if name else None
+
+def get_bikeID(name):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT bikeID FROM bike WHERE name = ?;", (name,))
+    bikeID = cursor.fetchone()
+    conn.close()
+    return bikeID[0] if bikeID else None
+
+def get_bike_status(bikeID):
+	conn = get_connection()
+	cursor = conn.cursor()
+	cursor.execute("SELECT status FROM bike WHERE bikeID = ?;", (bikeID,))
+	status = cursor.fetchone()
+	conn.close()
+	return status[0] if status else None
+
+def get_userID(name):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT userID FROM user WHERE name = ?;", (name,))
+    userID = cursor.fetchone()
+    conn.close()
+    return userID[0] if userID else None
+
+def get_stationID(name):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT stationID FROM station WHERE name = ?;", (name,))
+    stationID = cursor.fetchone()
+    conn.close()
+    return stationID[0] if stationID else None
+
+# -------------- Inserts -------------------------------
 # Functions to insert new information into the database
 def insert_user(full_name, phone_nr, email):
 	conn = get_connection()
@@ -67,3 +151,26 @@ def insert_user(full_name, phone_nr, email):
 				)
 	conn.commit()
 	conn.close()
+
+def insert_checkout(userID, stationID, bikeID):
+    conn = get_connection()
+    current_time = datetime.now()
+    current_time = current_time.replace(microsecond=0)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE bike SET status = 'Active' WHERE bikeID = ?", (bikeID,))
+    cursor.execute("""INSERT INTO trip (startTime, startStationID, bikeID, userID) VALUES (?, ?, ?, ?)""",
+                   (current_time, stationID, bikeID, userID))
+    conn.commit()
+    conn.close()
+
+
+def insert_dropoff(userID, stationID, bikeID):
+    conn = get_connection()
+    current_time = datetime.now()
+    current_time = current_time.replace(microsecond=0)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE bike SET status = 'Parked' WHERE bikeID = ?", (bikeID,))
+    cursor.execute("""UPDATE trip SET endTime = ?, endStationID = ? WHERE userID = ? AND bikeID = ?; """, #add??:  AND endTime = NULL
+                   (current_time, stationID, userID, bikeID,))
+    conn.commit()
+    conn.close()

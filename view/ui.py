@@ -60,7 +60,26 @@ app_ui = ui.page_fluid(
 						)	
     				),
                          
-			),      
+			),
+            ui.nav_panel("Interactions",
+				ui.h2('Interactions', style='color: green;'),
+                ui.layout_columns(
+					ui.card(
+						ui.card_header('CHECKOUT', style="color: green;"),
+							ui.output_ui("select_user_ui_check"),
+							ui.output_ui("select_station_ui_check"),
+							ui.input_action_button("checkout_button", "Checkout", width='40%', style="color: green; max-height: 5dvh;"),
+						ui.output_ui("checkout_selected")       #Placeholder until 'checkout_button' has been clicked.
+					),
+    				ui.card(
+						ui.card_header('DROPOFF', style="color: green;"),
+							ui.output_ui("select_user_ui_drop"),
+							ui.output_ui("select_station_ui_drop"),
+							ui.input_action_button("dropoff_button", "Dropoff", width='40%', style="color: green; max-height: 5dvh;"),
+						ui.output_ui("dropoff_selected")       #Placeholder until 'droppff_button' has been clicked.
+					),
+				),
+			)      
         )
-    ),
+    )
 )
