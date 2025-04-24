@@ -14,14 +14,13 @@ def server(input , output, session):
 	subscriptions = reactive.value(get_subscription())
 	trips_end = reactive.value(get_trips_endstation())
 	
-
-    
+			
     # Rendering DataFrames
 	# https://shiny.posit.co/py/api/core/ui.output_data_frame.html#examples
 	# used to find an example of how it was used/called
 	@output 
 	@render.data_frame
-	@reactive.event(input.user_search_button, ignore_none=False)     # Ignore_none to collect the df initially, and then update on botton click
+	@reactive.event(input.user_search_button, ignore_none=False)    	# Ignore_none to collect the df initially, and then update on botton click
 	def usernames_df():
 		query = input.user_search_input().strip()
 		if query:
@@ -153,7 +152,7 @@ def server(input , output, session):
 		# Validity check
 		if is_valid_dropoff(userID, stationID, bikeID):
 			insert_dropoff(userID, stationID, bikeID)
-			message = f"{input.select_user_drop()}  drpped off {get_bike_name(bikeID)} at {input.select_station_drop()}"
+			message = f"{input.select_user_drop()}  dropped off {get_bike_name(bikeID)} at {input.select_station_drop()}"
 		else:
 			if not is_valid_bikeID(bikeID):   
 				message = f"There was no trip found for this user."   # This is useful, the ones under are redundant at this point

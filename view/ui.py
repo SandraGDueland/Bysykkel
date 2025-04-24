@@ -21,13 +21,13 @@ app_ui = ui.page_fluid(
 		""")
 	),
 	ui.h1('Bysykkel', style = 'color: green;'),
-	ui.page_fillable(
-		ui.navset_card_tab(                 # https://shiny.posit.co/py/layouts/tabs/#card-with-a-tabbed-tabset
+	ui.page_fillable(                # https://shiny.posit.co/py/layouts/tabs/#card-with-a-tabbed-tabset
+		ui.navset_card_tab(            
 			ui.nav_panel("Users",           # Used this link to find the tab component
 				ui.h2('Usernames', style='color: green;'),
                 ui.row(
                 	ui.input_text("user_search_input", label=None, placeholder="Search by name.."),
-                	ui.input_action_button("user_search_button", "Search", style="color: green; max-height: 5dvh;", width='30%'),
+                	ui.input_action_button("user_search_button", "Search", style="color: green; max-height: 4.5dvh; justify-content: center; align-items: center; display: flex;", width='30%'),
 				),
 				ui.output_data_frame("usernames_df"),
 			),
@@ -68,18 +68,19 @@ app_ui = ui.page_fluid(
 						ui.card_header('CHECKOUT', style="color: green;"),
 							ui.output_ui("select_user_ui_check"),
 							ui.output_ui("select_station_ui_check"),
-							ui.input_action_button("checkout_button", "Checkout", width='40%', style="color: green; max-height: 5dvh;"),
+							ui.input_action_button("checkout_button", "Checkout", width='40%', style="color: green;"),
 						ui.output_ui("checkout_selected")       #Placeholder until 'checkout_button' has been clicked.
 					),
     				ui.card(
 						ui.card_header('DROPOFF', style="color: green;"),
 							ui.output_ui("select_user_ui_drop"),
 							ui.output_ui("select_station_ui_drop"),
-							ui.input_action_button("dropoff_button", "Dropoff", width='40%', style="color: green; max-height: 5dvh;"),
+							ui.input_action_button("dropoff_button", "Dropoff", width='40%', style="color: green;"),
 						ui.output_ui("dropoff_selected")       #Placeholder until 'droppff_button' has been clicked.
 					),
 				),
-			)      
+			),
+            id="active_tab", selected="Users",       
         )
     )
 )
