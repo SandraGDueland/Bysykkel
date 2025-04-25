@@ -94,7 +94,6 @@ def server(input , output, session):
 		if is_valid_bikeID(bikeID) and is_valid_userID(userID) and is_valid_stationID(stationID):
 			if is_active_bike(bikeID) and is_available_station(stationID):
 				validity = True
-       
 		return validity
      
 	# -----------------------Button handling-------------------------------
@@ -167,7 +166,6 @@ def server(input , output, session):
 		userID = get_userID(input.select_user_drop())
 		stationID = get_stationID(input.select_station_drop())
 		bikeID = find_active_bike(userID)
-  
 		# Validity check dropoff
 		if is_valid_dropoff(userID, stationID, bikeID):
 			insert_dropoff(userID, stationID, bikeID)    # Adds dropoff to db if valid

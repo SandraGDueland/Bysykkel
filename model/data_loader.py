@@ -203,7 +203,8 @@ def insert_dropoff(userID, stationID, bikeID):
     current_time = datetime.now()
     current_time = current_time.replace(microsecond=0)
     cursor = conn.cursor()
-    cursor.execute("UPDATE bike SET status = 'Parked' WHERE bikeID = ?", (bikeID,))
+    
+    cursor.execute("UPDATE bike SET status = 'Parked', lastStationID = ? WHERE bikeID = ?", (stationID, bikeID,))
     cursor.execute("""UPDATE trip SET endTime = ?, endStationID = ? WHERE userID = ? AND bikeID = ?; """,
                    (current_time, stationID, userID, bikeID,))
     cursor.execute("UPDATE station SET availableP_spots = availableP_spots - 1;")
