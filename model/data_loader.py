@@ -204,9 +204,24 @@ def insert_dropoff(userID, stationID, bikeID):
     current_time = current_time.replace(microsecond=0)
     cursor = conn.cursor()
     
-    cursor.execute("UPDATE bike SET status = 'Parked', lastStationID = ? WHERE bikeID = ?", (stationID, bikeID,))
-    cursor.execute("""UPDATE trip SET endTime = ?, endStationID = ? WHERE userID = ? AND bikeID = ?; """,
+    cursor.execute("UPDATE bike SET status = 'Parked', lastStationID = ? WHERE bikeID = ?;", (stationID, bikeID,))
+    cursor.execute("UPDATE trip SET endTime = ?, endStationID = ? WHERE userID = ? AND bikeID = ?;",
                    (current_time, stationID, userID, bikeID,))
     cursor.execute("UPDATE station SET availableP_spots = availableP_spots - 1;")
+    print("running")
     conn.commit()
     conn.close()
+    
+def send_repair_request(item, bikeID):
+	conn = get_connection()
+	cursor = conn.cursor()
+	cursor.execute("""
+                INSERT INTO repairRequest (bikeID, repaircodeID) VALUES (?, ?);
+                """, (bikeID, item))
+	cursor.execute("UPDATE bike SET status = 'Inactive' WHERE bikeID = ?;", (bikeID,)) 
+	# I could update station availability here if I could guarantee that the bike was removed for repairs imediately, 
+	# but it probably will not be. Even setting the bike to Inactive regardles of what repairRequest is sent, is a bit much perhaps.
+	# However, since this solution will not take into account what functions would be available to administrators,
+ 	# I figured this was the best solution to demonstrate that a bike becomes inactive when it is being repaired. 
+	conn.commit()
+	conn.close()

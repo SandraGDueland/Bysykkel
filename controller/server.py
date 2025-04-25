@@ -3,7 +3,7 @@ from shiny import render, reactive, ui
 from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user, get_usernames_filtered, get_username, get_station
 from model.data_loader import get_trips_endstation, get_station_bikes, get_stations, get_users, find_available_bikeID, get_availability
 from model.data_loader import insert_checkout, get_stationID, get_userID, get_bike_name, find_active_bike, insert_dropoff, get_bike_status
-from model.data_loader import get_repair_choices
+from model.data_loader import get_repair_choices, send_repair_request
 
 
 def server(input , output, session):
@@ -16,6 +16,8 @@ def server(input , output, session):
 	trips_end = reactive.value(get_trips_endstation())
 	search_query_usernames = reactive.value("")
 	station_bikes = reactive.value(get_station_bikes(""))
+	repairchoices = reactive.value(get_repair_choices())
+	repair_bikeID = reactive.value(-1)
 	
 			
     # Rendering DataFrames
@@ -135,7 +137,7 @@ def server(input , output, session):
 		else: validity.append("User was not added to the database.")
 
 		return validity   # returns a list of which validity checks failed and which passed
-	
+
 	# Checkout button handling
 	@reactive.event(input.checkout_button)
 	def checkout_bike():
@@ -169,14 +171,12 @@ def server(input , output, session):
 		# Validity check dropoff
 		if is_valid_dropoff(userID, stationID, bikeID):
 			insert_dropoff(userID, stationID, bikeID)    # Adds dropoff to db if valid
-			trips_end.set(get_trips_endstation())        # Force a reload of the trips table in ui
-			station_bikes.set(get_station_bikes(input.station_search().strip()))   # Force a new call to db to update station_bikes ui
-			bikes.set(get_bikes())
 			message = f"{get_username(userID)}  dropped off {get_bike_name(bikeID)} at {get_station(stationID)}"
-			repairchoices = get_repair_choices()
+			rchoices = repairchoices.get()
+			repair_bikeID.set(bikeID)
 			modal = ui.modal(                             # https://shiny.posit.co/py/api/core/ui.modal.html used as example
             "Send in a repair request.",
-			ui.input_selectize("select_repairs", "Please select one of the options below:", choices=repairchoices, multiple=True),
+			ui.input_selectize("select_repairs", "Please select one of the options below:", choices=rchoices, multiple=True),
             title="Was there anything wrong with the bike?",
             easy_close=False,
             footer=ui.row(
@@ -199,11 +199,15 @@ def server(input , output, session):
 		selected_repair_codes = input.select_repairs()
 		ui.modal_remove()
 		if not selected_repair_codes:
-			print("Nothing selected")
-			#TODO
+			pass
 		else:
-			print(f"Something selected: {selected_repair_codes}")
-			#TODO
+			for item in selected_repair_codes:
+				send_repair_request(item, repair_bikeID.get())
+		# Resets / recalls the reactive.values that have been affected
+		repair_bikeID.set(-1)
+		trips_end.set(get_trips_endstation())                                  # Force a reload of the trips table in ui
+		station_bikes.set(get_station_bikes(input.station_search().strip()))   # Force a new call to db to update station_bikes ui
+		bikes.set(get_bikes())												   # Force a reload of bikes and status table
   
 	# Select choices
 	# https://shiny.posit.co/py/api/core/ui.update_select.html
