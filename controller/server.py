@@ -3,6 +3,7 @@ from shiny import render, reactive, ui
 from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user, get_usernames_filtered, get_username, get_station
 from model.data_loader import get_trips_endstation, get_station_bikes, get_stations, get_users, find_available_bikeID, get_availability
 from model.data_loader import insert_checkout, get_stationID, get_userID, get_bike_name, find_active_bike, insert_dropoff, get_bike_status
+from model.data_loader import get_repair_choices
 
 
 def server(input , output, session):
@@ -174,6 +175,17 @@ def server(input , output, session):
 			station_bikes.set(get_station_bikes(input.station_search().strip()))   # Force a new call to db to update station_bikes ui
 			bikes.set(get_bikes())
 			message = f"{get_username(userID)}  dropped off {get_bike_name(bikeID)} at {get_station(stationID)}"
+			repairchoices = get_repair_choices()
+			modal = ui.modal(                             # https://shiny.posit.co/py/api/core/ui.modal.html used as example
+            "Send in a repair request.",
+			ui.input_selectize("select_repairs", "Please select one of the options below:", choices=repairchoices, multiple=True),
+            title="Was there anything wrong with the bike?",
+            easy_close=False,
+            footer=ui.row(
+                ui.markdown("If you close the modal without selecting an option, the option of no problems will be selected for you."),
+                ui.input_action_button("modal_close", "Close")),
+            )
+			ui.modal_show(modal)
 		else:
 			if not is_valid_bikeID(bikeID):   
 				message = f"There was no trip found for this user."
@@ -183,6 +195,18 @@ def server(input , output, session):
 				message = f"Something went wrong."
 		return message
  
+	@reactive.effect
+	@reactive.event(input.modal_close)
+	def handle_modal_close():
+		selected_repair_codes = input.select_repairs()
+		ui.modal_remove()
+		if not selected_repair_codes:
+			print("Nothing selected")
+			#TODO
+		else:
+			print(f"Something selected: {selected_repair_codes}")
+			#TODO
+  
 	# Select choices
 	# https://shiny.posit.co/py/api/core/ui.update_select.html
 	@reactive.Calc

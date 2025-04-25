@@ -77,6 +77,16 @@ def get_users():
     conn.close()
     return [user[0] for user in users]
 
+def get_repair_choices():
+	conn = get_connection()
+	cursor = conn.cursor()
+	cursor.execute("SELECT * FROM repaircode;")
+	codes = cursor.fetchall()
+	conn.close()
+	choices = {}
+	for row in codes:
+		choices.update({row[0]:row[1]})
+	return choices
 
  # ------------------ get one ------------------------------
 def find_available_bikeID(stationID):
