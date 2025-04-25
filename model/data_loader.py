@@ -25,7 +25,6 @@ def get_usernames_filtered(search_name):      # Get users query when search coun
     return usernames
 
 
-
 def get_bikes():
     conn = get_connection()
     bikes = pd.read_sql_query('SELECT name as Name, status as Status FROM bike ORDER BY bikeID ASC', conn)
@@ -141,6 +140,30 @@ def get_stationID(name):
     conn.close()
     return stationID[0] if stationID else None
 
+def get_username(userID):
+	conn = get_connection()
+	cursor = conn.cursor()
+	cursor.execute("SELECT name FROM user WHERE userID  = ?;", (userID,))
+	name = cursor.fetchone()
+	conn.close()
+	return name[0] if name else None
+
+def get_station(stationID):
+	conn = get_connection()
+	cursor = conn.cursor()
+	cursor.execute("SELECT name FROM station WHERE stationID  = ?;", (stationID,))
+	name = cursor.fetchone()
+	conn.close()
+	return name[0] if name else None
+
+def get_availability(stationID):
+	conn = get_connection()
+	cursor = conn.cursor()
+	cursor.execute("SELECT availableP_spots FROM station WHERE stationID = ?;", (stationID,))
+	availability = cursor.fetchone()
+	conn.close()
+	return availability[0]
+
 # -------------- Inserts -------------------------------
 # Functions to insert new information into the database
 def insert_user(full_name, phone_nr, email):
@@ -160,6 +183,7 @@ def insert_checkout(userID, stationID, bikeID):
     cursor.execute("UPDATE bike SET status = 'Active' WHERE bikeID = ?", (bikeID,))
     cursor.execute("""INSERT INTO trip (startTime, startStationID, bikeID, userID) VALUES (?, ?, ?, ?)""",
                    (current_time, stationID, bikeID, userID))
+    cursor.execute("UPDATE station SET availableP_spots = availableP_spots + 1;")
     conn.commit()
     conn.close()
 
@@ -170,7 +194,8 @@ def insert_dropoff(userID, stationID, bikeID):
     current_time = current_time.replace(microsecond=0)
     cursor = conn.cursor()
     cursor.execute("UPDATE bike SET status = 'Parked' WHERE bikeID = ?", (bikeID,))
-    cursor.execute("""UPDATE trip SET endTime = ?, endStationID = ? WHERE userID = ? AND bikeID = ?; """, #add??:  AND endTime = NULL
+    cursor.execute("""UPDATE trip SET endTime = ?, endStationID = ? WHERE userID = ? AND bikeID = ?; """,
                    (current_time, stationID, userID, bikeID,))
+    cursor.execute("UPDATE station SET availableP_spots = availableP_spots - 1;")
     conn.commit()
     conn.close()

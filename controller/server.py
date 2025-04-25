@@ -1,7 +1,7 @@
 import re
 from shiny import render, reactive, ui
-from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user, get_usernames_filtered 
-from model.data_loader import get_trips_endstation, get_station_bikes, get_stations, get_users, find_available_bikeID
+from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user, get_usernames_filtered, get_username, get_station
+from model.data_loader import get_trips_endstation, get_station_bikes, get_stations, get_users, find_available_bikeID, get_availability
 from model.data_loader import insert_checkout, get_stationID, get_userID, get_bike_name, find_active_bike, insert_dropoff, get_bike_status
 
 
@@ -14,6 +14,7 @@ def server(input , output, session):
 	subscriptions = reactive.value(get_subscription())
 	trips_end = reactive.value(get_trips_endstation())
 	search_query_usernames = reactive.value("")
+	station_bikes = reactive.value(get_station_bikes(""))
 	
 			
     # Rendering DataFrames
@@ -41,10 +42,10 @@ def server(input , output, session):
 
 	@output
 	@render.data_frame
-	@reactive.event(input.station_search)
 	def station_bikes_df():
 		query = input.station_search().strip()
-		df = get_station_bikes(query)
+		station_bikes.set(get_station_bikes(query))
+		df = station_bikes.get()
 		return df
 
 	@output
@@ -75,6 +76,9 @@ def server(input , output, session):
 	def is_valid_stationID(stationID):
 		return stationID is not None
 
+	def is_available_station(stationID):
+		return get_availability(stationID) > 0
+
 	def is_valid_bikeID(bikeID):
 		return bikeID is not None
 
@@ -87,7 +91,7 @@ def server(input , output, session):
 	def is_valid_dropoff(userID, stationID, bikeID):
 		validity = False
 		if is_valid_bikeID(bikeID) and is_valid_userID(userID) and is_valid_stationID(stationID):
-			if is_active_bike(bikeID):
+			if is_active_bike(bikeID) and is_available_station(stationID):
 				validity = True
        
 		return validity
@@ -142,7 +146,9 @@ def server(input , output, session):
 		# Validity check
 		if is_valid_checkout(userID, stationID, bikeID):
 			insert_checkout(userID, stationID, bikeID)
-			message = f"{input.select_user_check()} checked out {get_bike_name(bikeID)} at {input.select_station_check()}"
+			station_bikes.set(get_station_bikes(input.station_search().strip()))    # Force a new call to db to update station_bikes ui
+			bikes.set(get_bikes())
+			message = f"{get_username(userID)} checked out {get_bike_name(bikeID)} at {get_station(stationID)}"
 		else:
 			if not is_valid_bikeID(bikeID):   
 				message = f"There were no available bikes at this station."   # This is useful 
@@ -163,11 +169,16 @@ def server(input , output, session):
   
 		# Validity check dropoff
 		if is_valid_dropoff(userID, stationID, bikeID):
-			insert_dropoff(userID, stationID, bikeID)
-			message = f"{input.select_user_drop()}  dropped off {get_bike_name(bikeID)} at {input.select_station_drop()}"
+			insert_dropoff(userID, stationID, bikeID)    # Adds dropoff to db if valid
+			trips_end.set(get_trips_endstation())        # Force a reload of the trips table in ui
+			station_bikes.set(get_station_bikes(input.station_search().strip()))   # Force a new call to db to update station_bikes ui
+			bikes.set(get_bikes())
+			message = f"{get_username(userID)}  dropped off {get_bike_name(bikeID)} at {get_station(stationID)}"
 		else:
 			if not is_valid_bikeID(bikeID):   
 				message = f"There was no trip found for this user."
+			elif not is_available_station(stationID):
+				message = f"This station is full, select another station."
 			else:
 				message = f"Something went wrong."
 		return message

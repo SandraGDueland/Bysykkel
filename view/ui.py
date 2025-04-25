@@ -21,9 +21,9 @@ app_ui = ui.page_fluid(
 		""")
 	),
 	ui.h1('Bysykkel', style = 'color: green;'),
-	ui.page_fillable(                # https://shiny.posit.co/py/layouts/tabs/#card-with-a-tabbed-tabset
-		ui.navset_card_tab(            
-			ui.nav_panel("Users",           # Used this link to find the tab component
+	ui.page_fillable(                       # https://shiny.posit.co/py/layouts/tabs/#card-with-a-tabbed-tabset
+		ui.navset_card_tab(                 # Used this link to find the tab component
+			ui.nav_panel("Users", 
 				ui.h2('Usernames', style='color: green;'),
                 ui.row(
                 	ui.input_text("user_search_input", label=None, placeholder="Search by name.."),
@@ -37,7 +37,7 @@ app_ui = ui.page_fluid(
 			),
 			ui.nav_panel("Stations",
 				ui.h2('Available bikes at each staiton', style='color: green;'),
-				ui.input_text("station_search", "Search by station or bike", placeholder="Search by station or bike..."),
+				ui.input_text("station_search", "Search by station or bike", placeholder="Search by station or bike...", value=""),
 				ui.output_data_frame("station_bikes_df")
 			),
 			ui.nav_panel("Bikes", 
