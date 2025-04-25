@@ -13,21 +13,26 @@ def server(input , output, session):
 	bikes = reactive.value(get_bikes())
 	subscriptions = reactive.value(get_subscription())
 	trips_end = reactive.value(get_trips_endstation())
+	search_query_usernames = reactive.value("")
 	
 			
     # Rendering DataFrames
 	# https://shiny.posit.co/py/api/core/ui.output_data_frame.html#examples
 	# used to find an example of how it was used/called
-	@output 
+	@output
 	@render.data_frame
-	@reactive.event(input.user_search_button, ignore_none=False)    	# Ignore_none to collect the df initially, and then update on botton click
 	def usernames_df():
-		query = input.user_search_input().strip()
-		if query:
+		query = search_query_usernames.get() # Collect the search value from the reactive.value that is changed when the search button is clicked
+		if query:                            # This prevents the usernames table from changing as one writes the search value, and only updates when the button is pressed
 			df = get_usernames_filtered(query)
 		else:
 			df = usernames.get()
 		return render.DataGrid(df)
+
+	@reactive.effect
+	@reactive.event(input.user_search_button)      # Called only when the usernames searach button is pressed
+	def usernames_search_handling():  			   # sets the reactive.value search_query_usernames force an update in the 
+		search_query_usernames.set(input.user_search_input().strip())  # usernames ui to reflect the filtered list from the search
 	
 	@output
 	@render.data_frame
@@ -112,13 +117,20 @@ def server(input , output, session):
 		else:
 			validity.append(f"{email} - Valid")
 
-
 		if is_valid_name(name) and is_valid_phone(phone) and is_valid_email(email):
-			insert_user(name, phone, email)                      # Inserts user into db if all checks are valid
+			insert_user(name, phone, email)         # Inserts user into db if all checks are valid
+			
+			# Resets the reactive.value search_query_usernames to force an utdate in the
+			# usernames table ui when a new user is added to the database
+			query = search_query_usernames.get()
+			search_query_usernames.set("")
+			search_query_usernames.set(query)
+			usernames.set(get_usernames())
+
 			validity.append("User was added to the database.")
 		else: validity.append("User was not added to the database.")
 
-		return validity
+		return validity   # returns a list of which validity checks failed and which passed
 	
 	# Checkout button handling
 	@reactive.event(input.checkout_button)
@@ -133,8 +145,8 @@ def server(input , output, session):
 			message = f"{input.select_user_check()} checked out {get_bike_name(bikeID)} at {input.select_station_check()}"
 		else:
 			if not is_valid_bikeID(bikeID):   
-				message = f"There were no available bikes at this station."   # This is useful, the ones under are redundant at this point
-			elif not is_valid_stationID(stationID):
+				message = f"There were no available bikes at this station."   # This is useful 
+			elif not is_valid_stationID(stationID):                           # These are redundant at this point because there is a default value selected
 				message = f"No station was selected."
 			elif not is_valid_userID(userID):
 				message = f"No user was selected."
@@ -149,13 +161,13 @@ def server(input , output, session):
 		stationID = get_stationID(input.select_station_drop())
 		bikeID = find_active_bike(userID)
   
-		# Validity check
+		# Validity check dropoff
 		if is_valid_dropoff(userID, stationID, bikeID):
 			insert_dropoff(userID, stationID, bikeID)
 			message = f"{input.select_user_drop()}  dropped off {get_bike_name(bikeID)} at {input.select_station_drop()}"
 		else:
 			if not is_valid_bikeID(bikeID):   
-				message = f"There was no trip found for this user."   # This is useful, the ones under are redundant at this point
+				message = f"There was no trip found for this user."
 			else:
 				message = f"Something went wrong."
 		return message
@@ -201,7 +213,7 @@ def server(input , output, session):
 	# Hidden text until action buttons are pressed	
 	@output
 	@render.text
-	def user_info_ui():          # Shows only after Submit button is clicked
+	def user_info_ui():                                 # Shows only after Submit button is clicked
 		return ui.markdown("<br>".join(submit_user()))  # <br> break in HTML, because '\n' and '\r' didn't work 
 
 	@output

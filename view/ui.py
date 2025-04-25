@@ -79,8 +79,7 @@ app_ui = ui.page_fluid(
 						ui.output_ui("dropoff_selected")       #Placeholder until 'droppff_button' has been clicked.
 					),
 				),
-			),
-            id="active_tab", selected="Users",       
+			),    
         )
     )
 )
