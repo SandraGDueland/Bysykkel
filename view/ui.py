@@ -17,7 +17,18 @@ app_ui = ui.page_fluid(
 		}
 		.nav-tabs .active {
 			color: black !important;
+
+		}#switch_value{
+			max-width: fit-content;
+		}.row{
+			justify-content: space-around;
+			align-items: top;
+
+		}.form-switch{
+			justify-content: center;
+			align-items: center;
 		}
+  
 		""")
 	),
 	ui.h1('Bysykkel', style = 'color: green;'),
@@ -26,7 +37,7 @@ app_ui = ui.page_fluid(
 			ui.nav_panel("Users", 
 				ui.h2('Usernames', style='color: green;'),
                 ui.row(
-                	ui.input_text("user_search_input", label=None, placeholder="Search by name.."),
+                	ui.input_text("user_search_input", label=None, placeholder="Search by name..", width="67%"),
                 	ui.input_action_button("user_search_button", "Search", style="color: green; max-height: 4.5dvh; justify-content: center; align-items: center; display: flex;", width='30%'),
 				),
 				ui.output_data_frame("usernames_df"),
@@ -37,7 +48,7 @@ app_ui = ui.page_fluid(
 			),
 			ui.nav_panel("Available Bikes",
 				ui.h2('Available bikes at each staiton', style='color: green;'),
-				ui.input_text("station_search", "Search by station or bike", placeholder="Search by station or bike...", value=""),
+				ui.input_text("station_search", "Search by station or bike:", placeholder="Search by station or bike...", value=""),
 				ui.output_data_frame("station_bikes_df")
 			),
 			ui.nav_panel("Bike status", 
@@ -84,8 +95,11 @@ app_ui = ui.page_fluid(
 				ui.h2('Active trip', style='color: green;'),
 				ui.row(
                 ui.output_ui("trip_select_ui"),
-                ui.input_switch("in_progress", "Trip in progress", False),
-				),
+                ui.row(
+                	ui.input_switch("in_progress", "Trip in progress", False),
+            		ui.output_text("switch_value"),
+					)
+    			),
 				ui.output_ui("trip_df_ui")
 			),   
         )

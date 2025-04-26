@@ -289,4 +289,13 @@ def server(input , output, session):
 	@render.ui
 	def trip_df_ui():
 		return ui.output_data_frame("trip_df")
+
+	@output	
+	@render.text	
+	def switch_value():
+		val = input.in_progress()
+		if val:
+			return "Active trip: percentage of available parking spots."
+		else:
+			return "Inactive trip: percentage of available bikes."
 			
