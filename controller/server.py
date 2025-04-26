@@ -18,7 +18,6 @@ def server(input , output, session):
 	station_bikes = reactive.value(get_station_bikes(""))
 	repairchoices = reactive.value(get_repair_choices())
 	repair_bikeID = reactive.value(-1)
-	
 			
     # Rendering DataFrames
 	# https://shiny.posit.co/py/api/core/ui.output_data_frame.html#examples
@@ -102,10 +101,11 @@ def server(input , output, session):
 	# Submit-user-form button handling
 	@reactive.event(input.submit_user_form)
 	def submit_user():
-		name = input.full_name().strip()   # Getting rid of trailing white spaces
+		# sets the reactive.values to the text field input
+		name = input.full_name().strip()        # Getting rid of trailing white spaces with strip
 		phone = input.phone_nr().strip()
 		email = input.email().strip()
-		
+
         # Validity checks
 		validity = []
 		if not is_valid_name(name):
@@ -132,6 +132,9 @@ def server(input , output, session):
 			search_query_usernames.set("")
 			search_query_usernames.set(query)
 			usernames.set(get_usernames())
+			ui.update_text("full_name", value="")
+			ui.update_text("phone_nr", value="")
+			ui.update_text("email", value="")
 
 			validity.append("User was added to the database.")
 		else: validity.append("User was not added to the database.")
@@ -247,6 +250,12 @@ def server(input , output, session):
 		return ui.input_select("select_station_drop", "Select a station below:", choices=stationchoices, selected=stationchoices[0], multiple=False),
   
   
+	@output	
+	@render.ui
+	def trip_select_ui():
+		stations = station_choices()
+		return ui.input_selectize("select_station_trip", "Select a station below:", choices=stations, multiple=False),
+ 
 	# Hidden text until action buttons are pressed	
 	@output
 	@render.text

@@ -31,16 +31,16 @@ app_ui = ui.page_fluid(
 				),
 				ui.output_data_frame("usernames_df"),
 			),
-			ui.nav_panel("Trips", 
-				ui.h2('Trips ending at each station', style='color: green;'),
+			ui.nav_panel("Trips ended", 
+				ui.h2('Number of trips ending at each station', style='color: green;'),
 				ui.output_data_frame('trips_end_df')
 			),
-			ui.nav_panel("Stations",
+			ui.nav_panel("Available Bikes",
 				ui.h2('Available bikes at each staiton', style='color: green;'),
 				ui.input_text("station_search", "Search by station or bike", placeholder="Search by station or bike...", value=""),
 				ui.output_data_frame("station_bikes_df")
 			),
-			ui.nav_panel("Bikes", 
+			ui.nav_panel("Bike status", 
 				ui.h2('Bike names and status', style='color: green;'),
 				ui.output_data_frame('bikes_df')
 			),
@@ -79,7 +79,15 @@ app_ui = ui.page_fluid(
 						ui.output_ui("dropoff_selected")       #Placeholder until 'droppff_button' has been clicked.
 					),
 				),
-			),    
+			), 
+            ui.nav_panel("Active trip",
+				ui.h2('Active trip', style='color: green;'),
+				ui.row(
+                ui.output_ui("trip_select_ui"),
+                ui.input_switch("in_progress", "Trip in progress", False),
+				),
+				ui.output_data_frame("trip_df")
+			),   
         )
     )
 )
