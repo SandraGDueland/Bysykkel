@@ -60,6 +60,20 @@ def get_station_bikes(query):
     conn.close()
     return station_bikes
 
+def get_parking_availability(station):
+	conn = get_connection()
+	availability = pd.read_sql_query("""SELECT name AS Name, ROUND(((availableP_spots * 1.0) / maxP_spots)*100) AS Availability FROM station 
+                             		WHERE name = ?;""", conn, params=(station,))
+	conn.close()
+	return availability    # ava / max * 100%
+
+def get_bike_availability(station): 
+	conn = get_connection()
+	availability = pd.read_sql_query("""SELECT name AS Name, ROUND((((maxP_spots - availableP_spots) * 1.0)/ maxP_spots)*100) AS Availability FROM station 
+                             		WHERE name = ?;""", conn, params=(station,))
+	conn.close()
+	return availability   # max - ava / max * 100%
+
  #  ------------- Get lists --------------------
 def get_stations(): 
     conn = get_connection()
@@ -173,6 +187,7 @@ def get_availability(stationID):
 	availability = cursor.fetchone()
 	conn.close()
 	return availability[0]
+
 
 # -------------- Inserts -------------------------------
 # Functions to insert new information into the database

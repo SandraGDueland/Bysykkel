@@ -86,7 +86,7 @@ app_ui = ui.page_fluid(
                 ui.output_ui("trip_select_ui"),
                 ui.input_switch("in_progress", "Trip in progress", False),
 				),
-				ui.output_data_frame("trip_df")
+				ui.output_ui("trip_df_ui")
 			),   
         )
     )

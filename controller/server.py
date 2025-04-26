@@ -3,7 +3,7 @@ from shiny import render, reactive, ui
 from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user, get_usernames_filtered, get_username, get_station
 from model.data_loader import get_trips_endstation, get_station_bikes, get_stations, get_users, find_available_bikeID, get_availability
 from model.data_loader import insert_checkout, get_stationID, get_userID, get_bike_name, find_active_bike, insert_dropoff, get_bike_status
-from model.data_loader import get_repair_choices, send_repair_request
+from model.data_loader import get_repair_choices, send_repair_request, get_parking_availability, get_bike_availability
 
 
 def server(input , output, session):
@@ -60,6 +60,19 @@ def server(input , output, session):
 	def subs_df():
 		return render.DataGrid(subscriptions.get())
 	
+	@output
+	@render.data_frame
+	def trip_df():
+		station = input.select_station_trip()
+		in_progress = input.in_progress()
+		if station is None:
+			return
+		else:
+			if in_progress:
+				df = get_parking_availability(station)
+			else:
+				df = get_bike_availability(station)
+		return df
  
 	# Validity check rules        
 	# Used this link the make the checks: https://www.w3schools.com/python/python_regex.asp 
@@ -271,3 +284,9 @@ def server(input , output, session):
 	@render.text
 	def dropoff_selected():
 		return ui.markdown(dropoff_bike())
+
+	@output
+	@render.ui
+	def trip_df_ui():
+		return ui.output_data_frame("trip_df")
+			
