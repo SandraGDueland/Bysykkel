@@ -3,7 +3,7 @@ from shiny import render, reactive, ui
 from model.data_loader import get_bikes, get_subscription, get_usernames, insert_user, get_usernames_filtered, get_username, get_station
 from model.data_loader import get_trips_endstation, get_station_bikes, get_stations, get_users, find_available_bikeID, get_availability
 from model.data_loader import insert_checkout, get_stationID, get_userID, get_bike_name, find_active_bike, insert_dropoff, get_bike_status
-from model.data_loader import get_repair_choices, send_repair_request, get_parking_availability, get_bike_availability
+from model.data_loader import get_repair_choices, send_repair_request, get_parking_availability, get_bike_availability, get_position
 
 
 def server(input , output, session):
@@ -72,6 +72,11 @@ def server(input , output, session):
 				df = get_parking_availability(station)
 			else:
 				df = get_bike_availability(station)
+		position = get_position(station)
+		lat = position[0]
+		long = position[1]
+		link = [ui.HTML(f'<a href="https://www.openstreetmap.org/#map=17/{lat}/{long}">Map link</a>')]   # https://stackoverflow.com/questions/78835912/how-to-add-a-hyperlink-to-a-rendered-dataframe-in-shiny-for-python
+		df["Map"]= link
 		return df
  
 	# Validity check rules        

@@ -188,6 +188,14 @@ def get_availability(stationID):
 	conn.close()
 	return availability[0]
 
+def get_position(station):
+	conn = get_connection()
+	cursor = conn.cursor()
+	cursor.execute("SELECT positionLat, positionLong FROM station WHERE name = ?;", (station,))
+	pos = cursor.fetchone()
+	conn.close()
+	return pos
+    
 
 # -------------- Inserts -------------------------------
 # Functions to insert new information into the database
