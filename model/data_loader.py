@@ -40,7 +40,7 @@ def get_subscription():
 def get_trips_endstation():
     conn = get_connection()
     trips_endstaiton = pd.read_sql_query("""
-                                         SELECT station.stationID AS StationID, station.name AS Name, count(*) AS Number_of_trips 
+                                         SELECT station.stationID AS StationID, station.name AS Name, count(*) AS 'Number of trips' 
                                          FROM trip JOIN station 
                                          ON trip.endStationID = station.stationID
                                          GROUP BY station.stationID;
@@ -216,7 +216,7 @@ def insert_checkout(userID, stationID, bikeID):
     cursor.execute("UPDATE bike SET status = 'Active' WHERE bikeID = ?", (bikeID,))
     cursor.execute("""INSERT INTO trip (startTime, startStationID, bikeID, userID) VALUES (?, ?, ?, ?)""",
                    (current_time, stationID, bikeID, userID))
-    cursor.execute("UPDATE station SET availableP_spots = availableP_spots + 1;")
+    cursor.execute("UPDATE station SET availableP_spots = (availableP_spots + 1);")
     conn.commit()
     conn.close()
 
@@ -230,8 +230,7 @@ def insert_dropoff(userID, stationID, bikeID):
     cursor.execute("UPDATE bike SET status = 'Parked', lastStationID = ? WHERE bikeID = ?;", (stationID, bikeID,))
     cursor.execute("UPDATE trip SET endTime = ?, endStationID = ? WHERE userID = ? AND bikeID = ?;",
                    (current_time, stationID, userID, bikeID,))
-    cursor.execute("UPDATE station SET availableP_spots = availableP_spots - 1;")
-    print("running")
+    cursor.execute("UPDATE station SET availableP_spots = (availableP_spots - 1);")
     conn.commit()
     conn.close()
     

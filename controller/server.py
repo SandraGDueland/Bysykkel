@@ -18,6 +18,8 @@ def server(input , output, session):
 	station_bikes = reactive.value(get_station_bikes(""))
 	repairchoices = reactive.value(get_repair_choices())
 	repair_bikeID = reactive.value(-1)
+	availability = reactive.value("")
+	selected_station = reactive.value("")
 			
     # Rendering DataFrames
 	# https://shiny.posit.co/py/api/core/ui.output_data_frame.html#examples
@@ -63,15 +65,18 @@ def server(input , output, session):
 	@output
 	@render.data_frame
 	def trip_df():
-		station = input.select_station_trip()
+		selected_station.set(input.select_station_trip())
+		station = selected_station.get()
 		in_progress = input.in_progress()
 		if station is None:
 			return
 		else:
 			if in_progress:
-				df = get_parking_availability(station)
+				availability.set(get_parking_availability(station))
+				df = availability.get()
 			else:
-				df = get_bike_availability(station)
+				availability.set(get_bike_availability(station))
+				df = availability.get()
 		position = get_position(station)
 		lat = position[0]
 		long = position[1]
@@ -172,7 +177,14 @@ def server(input , output, session):
 			insert_checkout(userID, stationID, bikeID)
 			station_bikes.set(get_station_bikes(input.station_search().strip()))    # Force a new call to db to update station_bikes ui
 			bikes.set(get_bikes())
+			station = selected_station.get()
+			if station is not None:
+				if input.in_progress():
+					availability.set(get_parking_availability(station))
+				else:
+					availability.set(get_bike_availability(station))
 			message = f"{get_username(userID)} checked out {get_bike_name(bikeID)} at {get_station(stationID)}"
+
 		else:
 			if not is_valid_bikeID(bikeID):   
 				message = f"There were no available bikes at this station."   # This is useful 
@@ -230,6 +242,11 @@ def server(input , output, session):
 		trips_end.set(get_trips_endstation())                                  # Force a reload of the trips table in ui
 		station_bikes.set(get_station_bikes(input.station_search().strip()))   # Force a new call to db to update station_bikes ui
 		bikes.set(get_bikes())												   # Force a reload of bikes and status table
+		station = selected_station.get()
+		if input.in_progress():
+			availability.set(get_parking_availability(station))
+		else:
+			availability.set(get_bike_availability(station))
   
 	# Select choices
 	# https://shiny.posit.co/py/api/core/ui.update_select.html
@@ -273,7 +290,7 @@ def server(input , output, session):
 	@render.ui
 	def trip_select_ui():
 		stations = station_choices()
-		return ui.input_selectize("select_station_trip", "Select a station below:", choices=stations, multiple=False),
+		return ui.input_selectize("select_station_trip", "Select a station below:", choices=stations, selected=stations[0], multiple=False),
  
 	# Hidden text until action buttons are pressed	
 	@output
