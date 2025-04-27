@@ -77,6 +77,7 @@ def server(input , output, session):
 		long = position[1]
 		link = [ui.HTML(f'<a href="https://www.openstreetmap.org/#map=17/{lat}/{long}">Map link</a>')]   # https://stackoverflow.com/questions/78835912/how-to-add-a-hyperlink-to-a-rendered-dataframe-in-shiny-for-python
 		df["Map"]= link
+		df["Availability"] = (df["Availability"]).astype(int).astype(str) + '%'
 		return df
  
 	# Validity check rules        
@@ -300,7 +301,7 @@ def server(input , output, session):
 	def switch_value():
 		val = input.in_progress()
 		if val:
-			return "Active trip: percentage of available parking spots."
+			return "Active trip: Availability shows percentage of available parking spots."
 		else:
-			return "Inactive trip: percentage of available bikes."
+			return "Inactive trip: Availability shows percentage of available bikes."
 			

@@ -42,7 +42,7 @@ app_ui = ui.page_fluid(
 				),
 				ui.output_data_frame("usernames_df"),
 			),
-			ui.nav_panel("Trips ended", 
+			ui.nav_panel("Trips Ended", 
 				ui.h2('Number of trips ending at each station', style='color: green;'),
 				ui.output_data_frame('trips_end_df')
 			),
@@ -51,7 +51,7 @@ app_ui = ui.page_fluid(
 				ui.input_text("station_search", "Search by station or bike:", placeholder="Search by station or bike...", value=""),
 				ui.output_data_frame("station_bikes_df")
 			),
-			ui.nav_panel("Bike status", 
+			ui.nav_panel("Bike Status", 
 				ui.h2('Bike names and status', style='color: green;'),
 				ui.output_data_frame('bikes_df')
 			),
@@ -59,7 +59,7 @@ app_ui = ui.page_fluid(
 				ui.h2('Purchasing statistics for subscriptions', style='color: green;'),
 				ui.output_data_frame('subs_df')
 			),
-            ui.nav_panel("Add user",
+            ui.nav_panel("Add User",
                 ui.h2('Add new user', style= 'color: green;'),
 					ui.layout_columns(                             # https://shiny.posit.co/py/layouts/panels-cards/#content-divided-by-cards
 						ui.card(                                   # used for layout example
@@ -91,7 +91,7 @@ app_ui = ui.page_fluid(
 					),
 				),
 			), 
-            ui.nav_panel("Active trip",
+            ui.nav_panel("Active Trip",
 				ui.h2('Active trip', style='color: green;'),
 				ui.row(
                 ui.output_ui("trip_select_ui"),
