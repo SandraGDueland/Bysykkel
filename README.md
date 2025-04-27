@@ -2,7 +2,8 @@
 
 # How to run: 
 In terminal inside the repo folder:
-python3 -m shiny run app.py
+    
+    python3 -m shiny run app.py
 
 Dependencise:
 - shiny
@@ -27,7 +28,6 @@ The web app is a single page application. The page consists of a card with diffe
     This tab holds two cards with different interactions from task 3 in the exercise. Both card dispaly two selecters with username and station names and their individual buttons. 
         The checkout card will check out a parked bike from the selected station if a bike is available there and set it to active. This will also start a trip with the selected user and chosen bike. 
         The dropoff card will drop off and park a bike at the selected station if the selected user is tied to an active trip. This will also end the trip and update the trip information in the database. 
-        
         After the dropoff a modal will pop up that asks the user if there was anything wrong with the bike and suggest a list of repair codes. If the user choses a code, a repair request will be sent to the database and the status of the bike in question will be set to 'Inactive', meaning that the bike will no longer be available to ride until it is repaired. I considered letting the bikes that need repairs continue to stay in circulation, but figured that some faults are dangerous and the bikes should therefore be repaired before they can be used again. 
 - Active Trip:
     Within this tab there is a selecter and a switch with some associated output. The switch represent a trip being in progress or not. A station is selected and depending on the switch being turned on or off the information text and the table will change. If the switch is turned off, the table will display the availability of bikes as a percentage of the maximum number of parking spots at that station. However, if the switch is turned on, the table will display the availability of parking spots as a percentage of the maximum number of parking spots at that station. In the last column in the table, a link to a map is displayed and can be pressed to open the map at the coordinated of the station selected. 
